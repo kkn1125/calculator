@@ -43,8 +43,8 @@ function calculate(string) {
  * @author ohoraming
  * @since v0.1.0
  */
-function plus() {
-
+function plus(a, b) {
+    return a + b
 }
 
 /**
@@ -52,8 +52,8 @@ function plus() {
  * @author kimson
  * @since v0.1.0
  */
-function minus() {
-
+function minus(a, b) {
+    return a - b
 }
 
 /**
@@ -61,8 +61,8 @@ function minus() {
  * @author ohoraming
  * @since v0.1.0
  */
-function multiply() {
-
+function multiply(a, b) {
+    return a * b
 }
 
 /**
@@ -70,8 +70,8 @@ function multiply() {
  * @author kimson
  * @since v0.1.0
  */
-function divide() {
-
+function divide(a, b) {
+    return a / b
 }
 
 const arithmeticOrderConvetion = ["*", "/", "+", "-"];
@@ -83,10 +83,10 @@ let hasMultiOrDivideFlag = true;
 
 function 연산(current, next, sign) {
     switch (sign) {
-        case "*": return current * next;
-        case "/": return current / next;
-        case "+": return current + next;
-        case "-": return current - next;
+        case "*": return multiply(current, next);
+        case "/": return divide(current, next);
+        case "+": return plus(current, next);
+        case "-": return minus(current, next);
     }
 }
 
@@ -133,19 +133,22 @@ arithmeticOrderConvetion.forEach(sign => {
  *    }
  * ]
  */
+
+const string = "1+2*3/4-5" // 9
 function separateStringBySign(string) {
-    const arr = [];
     const source = string.match(/([\d\.]+|[\+\-\*\/])/g);
-
-    for(let i=0; i<source.length; i+=2) {
-        arr.push({
-            num: source[i],
-            next: source[i+1]
-        });
+    const arr = [];
+    // 1. 숫자(홀)랑 연산자(짝)를 분리해야해
+    // 2. 숫자는 num에 연산자는 next에 넣어야 함
+    for(let i=0; i < source.length; i+=2) {
+        const obj = {};
+        obj['num'] = source[i];
+        obj['next'] = source[i+1];
+        arr.push(obj);
     }
-
-    return arr;
 }
+
+separateStringBySign(string)
 
 function lastCalculator(signs) {
     while(signs.length > 1) {
