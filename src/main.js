@@ -1,9 +1,11 @@
 /**
+ * (5+9)+((8/(9*3))-1)*(5-9*(5+3))
  * 1. eval 함수 써서 calculate 함수만 작성 (같이)
  * 2. separate, plus, minus, multiply, divide, ordered, brackets 함수화
  * 3. 작성 (따로)
  */
 
+const MASTER_REGEXP = /\([\d\+\*\-\/]+\)/;
 const signs = ["+", "-", "*", "/", "(", ")", "="];
 const result = document.querySelector("#result");
 
@@ -131,8 +133,18 @@ arithmeticOrderConvetion.forEach(sign => {
  *    }
  * ]
  */
-function separateStringBySign() {
+function separateStringBySign(string) {
+    const arr = [];
+    const source = string.match(/([\d\.]+|[\+\-\*\/])/g);
 
+    for(let i=0; i<source.length; i+=2) {
+        arr.push({
+            num: source[i],
+            next: source[i+1]
+        });
+    }
+
+    return arr;
 }
 
 function lastCalculator(signs) {
@@ -140,17 +152,17 @@ function lastCalculator(signs) {
         const absolute = index%(signs.length-1);
         const current = signs[absolute];
         const next = signs[absolute+1];
-        
+
         hasMultiOrDivideFlag = signs.some(item =>
-            item.name === "*" ||
-            item.name === "/");
+            item.next === "*" ||
+            item.next === "/");
             
         if(hasMultiOrDivideFlag) {
-            if(current.name === "*" || current.name === "/") {
-                calculator[current.name](signs, absolute, current.num, next.num, current.name, next.name, index);
+            if(current.next === "*" || current.next === "/") {
+                calculator[current.next](signs, absolute, current.num, next.num, current.next, next.next, index);
             }
         } else {
-            calculator[current.name](signs, absolute, current.num, next.num, current.name, next.name, index);
+            calculator[current.next](signs, absolute, current.num, next.num, current.next, next.next, index);
         }
     
         index++;
@@ -160,3 +172,79 @@ function lastCalculator(signs) {
 
     return signs;
 }
+
+let test = "(5+9)+((8/(9*3))-1)*(5-9*(5+3))";
+
+function 괄호잡기() {
+    while (test.indexOf("(")>-1 && test.indexOf(")")>-1) {
+        let stack = [];
+
+        for(let idx in test) {
+            const word = test[idx];
+    
+            if(word === "(") {
+                stack.push([parseInt(idx), true]);
+            } else if(word === ")") {
+                stack.push([parseInt(idx), false]);
+            }
+        }
+
+        for(let id=0; id<stack.length-1; id++) {
+            const flag1 = stack[id];
+            const flag2 = stack[id+1];
+            const [idx1, bool1] = flag1;
+            const [idx2, bool2] = flag2;
+    
+            if(bool1 && !bool2) {
+                const 알멩이 = test.slice(idx1+1, idx2);
+                const middle = separateStringBySign(알멩이);
+                // console.table(middle)
+                const result = lastCalculator(middle).pop().num;
+                const front = test.slice(0, idx1);
+                const back = test.slice(idx2+1);
+                
+                test = front+result+back;
+                break;
+            }
+        }
+    }
+
+    let temps = [];
+    
+    let cc = 0;
+
+    while(test.length>0) {
+        // console.log(test)
+        const lastS = test.indexOf("*", 1);
+        const lastD = test.indexOf("/", 1);
+        const lastP = test.indexOf("+", 1);
+        const lastM = test.indexOf("-", 1);
+        let min = Math.min(...[lastS,lastD,lastP,lastM].filter(x=>x!=-1));
+        
+        temps.push(test.slice(0, min));
+        temps.push(test.slice(min, min+1));
+        test = test.slice(min+1);
+
+        if(min == Infinity) break;
+
+        cc++;
+
+        if(cc>50) break;
+    }
+
+    temps = temps.filter(x=>x);
+
+    let converted = [];
+
+    for(let i=0; i<temps.length; i+=2) {
+        converted.push({
+            num: temps[i],
+            next: temps[i+1]
+        });
+    }
+
+    return lastCalculator(converted);
+}
+
+const 진짜끝 = 괄호잡기();
+// console.log(진짜끝)
